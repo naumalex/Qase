@@ -1,22 +1,33 @@
 package adaptors;
 
+import com.google.gson.reflect.TypeToken;
+import models.AllEntitiesResult;
+import models.PositiveResponse;
+import models.Response;
+import models.project.Project;
+
+import java.util.List;
+
 public class ProjectAdaptor extends BaseAdaptor {
-    private static String ENDPOINT = "projects";
+    private final static String ENDPOINT = "project";
 
-    public String getAllProjects(int statusCode) {
-        return get(ENDPOINT, statusCode);
+    public Response<AllEntitiesResult<Project>> getAllProjects(int statusCode, int limit) {
+        return gson.fromJson(get(ENDPOINT + "?limit=" + String.valueOf(limit), statusCode),
+                new TypeToken<Response<AllEntitiesResult<Project>>>(){}.getType());
     }
 
-    public String createProject(int statusCode, String requestBody) {
-        return post(ENDPOINT, statusCode, requestBody);
+    public Response<Project> createProject(int statusCode, String requestBody) {
+        return gson.fromJson(post(ENDPOINT, statusCode, requestBody),
+            new TypeToken<Response<Project>>(){}.getType());
     }
-
-    public String getProjectByCode(int statusCode, String) {
-
+    public Response<Project> getProjectByCode(int statusCode, String projectCode) {
+        return gson.fromJson(
+                get(ENDPOINT + "/" + projectCode, statusCode),
+                new TypeToken<Response<Project>>(){}.getType());
     }
-
-    public String deleteProjectByCode() {
-       // return null;
+    public Response<Project> deleteProjectByCode(int statusCode, String projectCode) {
+        return gson.fromJson(delete(ENDPOINT + "/" + projectCode, statusCode),
+            new TypeToken<Response<Project>>(){}.getType());
     }
 
 }
