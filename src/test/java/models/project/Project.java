@@ -1,4 +1,4 @@
-package models;
+package models.project;
 
 import lombok.Builder;
 import lombok.Data;
@@ -10,4 +10,5 @@ public class Project {
     String title;
     String code;
     String description;
+    Counts counts;
 }
