@@ -2,17 +2,14 @@ package adaptors;
 
 import com.google.gson.reflect.TypeToken;
 import models.AllEntitiesResult;
-import models.PositiveResponse;
 import models.Response;
 import models.project.Project;
-
-import java.util.List;
 
 public class ProjectAdaptor extends BaseAdaptor {
     private final static String ENDPOINT = "project";
 
     public Response<AllEntitiesResult<Project>> getAllProjects(int statusCode, int limit) {
-        return gson.fromJson(get(ENDPOINT + "?limit=" + String.valueOf(limit), statusCode),
+        return gson.fromJson(get(ENDPOINT + "?limit=" + limit, statusCode),
                 new TypeToken<Response<AllEntitiesResult<Project>>>(){}.getType());
     }
 

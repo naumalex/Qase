@@ -2,85 +2,52 @@ package tests;
 
 import adaptors.ProjectAdaptor;
 import com.google.gson.Gson;
-import lombok.Builder;
 import models.*;
 import models.project.*;
+import org.apache.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import utils.ProjectFactory;
 import utils.PropertyReader;
 
 import java.util.Arrays;
+import java.util.List;
 
-public class APITests {
+public class ProjectTests {
     private final ProjectAdaptor projectAdaptor = new ProjectAdaptor();
-    Gson gson = new Gson();
-
+    private static final Gson GSON = new Gson();
+    private static final int LIMIT = 2;
     @Test
     public void getAllProjectsPositiveTest() {
         Response<AllEntitiesResult<Project>> expectedResponse =
             Response.<AllEntitiesResult<Project>>builder()
                 .result(AllEntitiesResult.<Project>builder()
                     .total(Integer.parseInt(PropertyReader.getProperty(
-                        "qase.api.getAllProjects.total"
+                        "qase.api.project.getAllProjects.total"
                     )))
                     .filtered(Integer.parseInt(PropertyReader.getProperty(
-                        "qase.api.getAllProjects.filtered"
+                        "qase.api.project.getAllProjects.filtered"
                     )))
                     .count(Integer.parseInt(PropertyReader.getProperty(
-                        "qase.api.getAllProjects.count"
+                        "qase.api.project.getAllProjects.count"
                     )))
                     .entities(Arrays.asList(
-                        Project.builder()
-                            .code(PropertyReader.getProperty(
-                                "qase.api.getAllProjects.first_project.project_code"))
-                            .title(PropertyReader.getProperty(
-                                "qase.api.getAllProjects.first_project.project_title"))
-                            .counts(Counts.builder()
-                                .cases(Integer.parseInt(PropertyReader.getProperty(
-                                    "qase.api.getAllProjects.first_project.project_counts_cases")))
-                                .suites(Integer.parseInt(PropertyReader.getProperty(
-                                    "qase.api.getAllProjects.first_project.project_counts_suits")))
-                                .milestones(Integer.parseInt(PropertyReader.getProperty(
-                                    "qase.api.getAllProjects.first_project.project_counts_milestones")))
-                                .runs(Runs.builder().build())
-                                .defects(Defects.builder().build())
-                                .build())
-                            .build(),
-                        Project.builder()
-                            .code(PropertyReader.getProperty(
-                                "qase.api.getAllProjects.second_project.project_code"
-                            ))
-                            .title(PropertyReader.getProperty(
-                                "qase.api.getAllProjects.second_project.project_title"))
-
-                            .counts(Counts.builder()
-                                .cases(Integer.parseInt(PropertyReader.getProperty(
-                                    "qase.api.getAllProjects.second_project.project_counts_cases")))
-                                .suites(Integer.parseInt(PropertyReader.getProperty(
-                                    "qase.api.getAllProjects.second_project.project_counts_suits")))
-                                .runs(Runs.builder().build())
-                                .defects(Defects.builder()
-                                    .total(Integer.parseInt(PropertyReader.getProperty(
-                                        "qase.api.getAllProjects.second_project.project_counts_defects_total")))
-                                    .open(Integer.parseInt(PropertyReader.getProperty(
-                                        "qase.api.getAllProjects.second_project.project_counts_defects_open")))
-                                    .build())
-                                .build())
-                            .build()))
+                        ProjectFactory.getFirstProjectInfo(),
+                        ProjectFactory.getSecondProjectInfo()))
                     .build())
                 .build();
         Response<AllEntitiesResult<Project>> actualResponse =
-            projectAdaptor.getAllProjects(200, 2);
+            projectAdaptor.getAllProjects(HttpStatus.SC_OK, LIMIT);
         Assert.assertEquals(actualResponse, expectedResponse);
     }
 
     @Test
     public void getAllProjectsNegativeTest() {
-        Response<Project> expectedResponse = Response
-            .<Project>builder()
+        Response<AllEntitiesResult<Project>> expectedResponse = Response
+            .<AllEntitiesResult<Project>>builder()
             .status(false)
             .errorMessage("Data is invalid.")
-            .errorFields(Arrays.asList(
+            .errorFields(List.of(
                 ErrorField.builder()
                     .field("limit")
                     .error("The limit must be at least 1.")
@@ -93,14 +60,14 @@ public class APITests {
     @Test
     public void createProjectPositiveTest() {
         String projectCode = PropertyReader.getProperty(
-            "qase.api.project.createProject_deleteProject.project_code");
+            "qase.api.project.createProject_deleteProject.code");
 
         Project project = Project.builder()
                 .title(PropertyReader.getProperty(
-                    "qase.api.project.createProject.project_title"))
+                    "qase.api.project.createProject.title"))
                 .code(projectCode)
                 .description(PropertyReader.getProperty(
-                    "qase.api.project.createProject.project_description"))
+                    "qase.api.project.createProject.description"))
                 .build();
 
         Response<Project> expectedResponse = Response
@@ -111,7 +78,7 @@ public class APITests {
             .build();
 
         Response<Project> actualResponse =
-                projectAdaptor.createProject(200, gson.toJson(project));
+                projectAdaptor.createProject(200, GSON.toJson(project));
         Assert.assertEquals(actualResponse, expectedResponse);
     }
 
@@ -123,8 +90,8 @@ public class APITests {
             .code("")
             .build();
 
-        Response expectedResponse = Response
-            .builder()
+        Response<Project> expectedResponse = Response
+            .<Project>builder()
             .status(false)
             .errorMessage("Data is invalid.")
             .errorFields(Arrays.asList(
@@ -137,8 +104,8 @@ public class APITests {
                     .error("Project code is required.")
                     .build()))
             .build();
-        Response response = projectAdaptor.createProject(
-            400, gson.toJson(project));
+        Response<Project> response = projectAdaptor.createProject(
+            HttpStatus.SC_BAD_REQUEST, GSON.toJson(project));
         Assert.assertEquals(response, expectedResponse);
     }
 
@@ -147,26 +114,26 @@ public class APITests {
         Response<Project> expectedResponse = Response.<Project>builder()
             .result(Project.builder()
                 .code(PropertyReader.getProperty(
-                    "qase.api.getProjectByCode.project_code"))
+                    "qase.api.project.getProjectByCode.code"))
                 .title(PropertyReader.getProperty(
-                    "qase.api.getProjectByCode.project_title"))
+                    "qase.api.project.getProjectByCode.title"))
                 .counts(Counts.builder()
                     .cases(Integer.parseInt(PropertyReader.getProperty(
-                        "qase.api.getProjectByCode.project_counts_cases"
+                        "qase.api.project.getProjectByCode.counts_cases"
                     )))
                     .suites(Integer.parseInt(PropertyReader.getProperty(
-                        "qase.api.getProjectByCode.project_counts_suits"
+                        "qase.api.project.getProjectByCode.counts_suits"
                     )))
                     .milestones(Integer.parseInt(PropertyReader.getProperty(
-                        "qase.api.getProjectByCode.project_counts_milestones"
+                        "qase.api.project.getProjectByCode.counts_milestones"
                     )))
                     .runs(Runs.builder().build())
                     .defects(Defects.builder()
                         .total(Integer.parseInt(PropertyReader.getProperty(
-                            "qase.api.getProjectByCode.project_counts_defects_total"
+                            "qase.api.project.getProjectByCode.counts_defects_total"
                         )))
                         .open(Integer.parseInt(PropertyReader.getProperty(
-                            "qase.api.getProjectByCode.project_counts_defects_open"
+                            "qase.api.project.getProjectByCode.counts_defects_open"
                         )))
                         .build())
                     .build())
@@ -174,7 +141,22 @@ public class APITests {
             .build();
         Response<Project> actualResponse = projectAdaptor.getProjectByCode(
             200, PropertyReader.getProperty(
-                "qase.api.getProjectByCode.project_code"));
+                "qase.api.project.getProjectByCode.code"));
+        Assert.assertEquals(actualResponse, expectedResponse);
+    }
+
+    @Test
+    public void getProjectByCodeNegativeTest() {
+        Response<Project> expectedResponse = Response
+            .<Project>builder()
+            .status(false)
+            .errorMessage("Project is not found.")
+            .build();
+
+        Response<Project> actualResponse = projectAdaptor.getProjectByCode(
+            HttpStatus.SC_NOT_FOUND, PropertyReader.getProperty(
+                "qase.api.all.code_of_not_existing_project"));
+
         Assert.assertEquals(actualResponse, expectedResponse);
     }
 
@@ -182,8 +164,9 @@ public class APITests {
     public void deleteProjectByCodePositiveTest() {
         Response<Project> actualResponse = projectAdaptor.deleteProjectByCode(
             200, PropertyReader.getProperty(
-                "qase.api.project.createProject_deleteProject.project_code"));
+                "qase.api.project.createProject_deleteProject.code"));
         Response<Project> expectedResponse = Response.<Project>builder().build();
+
         Assert.assertEquals(actualResponse, expectedResponse);
     }
 
@@ -196,8 +179,7 @@ public class APITests {
             .build();
         Response<Project> actualResponse = projectAdaptor.deleteProjectByCode(
             404, PropertyReader.getProperty(
-                "qase.api.project.deleteProject.no_existing_project_code"));
+                "qase.api.all.code_of_not_existing_project"));
         Assert.assertEquals(actualResponse, expectedResponse);
     }
-
 }

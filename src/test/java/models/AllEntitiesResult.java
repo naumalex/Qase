@@ -2,7 +2,6 @@ package models;
 
 import lombok.Builder;
 import lombok.Data;
-import models.project.Project;
 
 import java.util.List;
 
